@@ -6,6 +6,28 @@
 </head>
 <body>
     <h2>메인 페이지</h2>
+
     <a href="{% url 'board' %}"><button>게시판으로 이동</button></a>
+
+    <!-- 로그인 상태 체크 -->
+    {% if user.is_authenticated %}
+        <button id="logout-btn">로그아웃</button>
+    {% else %}
+        <a href="{% url 'signup' %}"><button id="signup-btn">회원가입</button></a>
+        <a href="{% url 'login' %}"><button id="login-btn">로그인</button></a>
+    {% endif %}
+
+    <script>
+        document.getElementById("logout-btn")?.addEventListener("click", async function() {
+            const response = await fetch("/logout/", { method: "POST" });
+
+            if (response.ok) {
+                alert("로그아웃 되었습니다.");
+                window.location.href = "/";
+            } else {
+                alert("로그아웃 실패");
+            }
+        });
+    </script>
 </body>
 </html>

@@ -8,18 +8,22 @@ def main_view(request):
     return render(request, 'main.html')
 
 def board_view(request):
+    # is_authenticated로 로그인 여부 체크
     if not request.user.is_authenticated:
-        return redirect('/signup/')  # 로그인하지 않은 사용자는 회원가입 페이지로 리디렉트
-    return render(request, 'board.html')  # 로그인한 경우 게시판 표시
+        # 로그인하지 않은 사용자는 회원가입 페이지로 리다이렉트
+        return redirect('/signup/')  
+    return render(request, 'board.html') 
 
 def signup_view(request):
     if request.method == 'POST':
         form = SignupForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password'])  # 비밀번호 암호화
+
+            # Django는 기본적으로 비밀번호 해시해서 저장
+            user.set_password(form.cleaned_data['password']) 
             user.save()
-            return redirect('login')
+            return redirect('/')
     else:
         form = SignupForm()
     return render(request, 'signup.html', {'form': form})
@@ -30,34 +34,19 @@ def login_view(request):
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         if user:
+            # 로그인 이후 main으로 이동
             login(request, user)
-            return redirect('board')
+            return redirect('/')
         else:
             return render(request, 'login.html', {'error': 'Invalid credentials'})
     return render(request, 'login.html')
 
 def logout_view(request):
     logout(request)
-    return redirect('login')
-
-@login_required
-def create_post_view(request):
-    if request.method == 'POST':
-        form = PostForm(request.POST)
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect('board')
-    else:
-        form = PostForm()
-    return render(request, 'create_post.html', {'form': form})
-
+    # 로그아웃 이후 main으로 이동
+    return redirect('/')
 
 @login_required
 def board_view(request):
     posts = Post.objects.all()
     return render(request, 'board.html', {'posts': posts})
-
-def post_list(request):
-    return render(request, "post_list.html")
